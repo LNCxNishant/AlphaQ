@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify
 import pandas as pd
 import random
 
+import streamlit as st
+
 app = Flask(__name__)
 
 # Load employee data

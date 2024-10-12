@@ -43,6 +43,30 @@ def generate_gantt_chart(schedule_df):
     fig.update_layout(xaxis_title="Shift Time", yaxis_title="Employee", showlegend=False)
     st.plotly_chart(fig)
 
+def convert_df_to_excel(df):
+    # Create a Pandas Excel writer using XlsxWriter as the engine.
+    with pd.ExcelWriter("MIS_Report.xlsx", engine='xlsxwriter') as writer:
+        # Write the DataFrame with employee name and salary to Excel
+        df[['employee_name', 'salary']].to_excel(writer, sheet_name='MIS Report', index=False)
+
+        # Get the xlsxwriter workbook and worksheet objects.
+        workbook = writer.book
+        worksheet = writer.sheets['MIS Report']
+
+        # Calculate the total salary
+        total_salary = df['salary'].sum()
+
+        # Write the total salary at the end of the sheet
+        worksheet.write(len(df) + 1, 0, 'Total Salary')  # Write 'Total Salary' in the first column
+        worksheet.write(len(df) + 1, 1, total_salary)    # Write the total salary value in the second column
+
+        # Close the writer (save the file)
+        writer.close()
+
+    # Return the saved Excel file as bytes
+    with open("MIS_Report.xlsx", "rb") as file:
+        return file.read()
+
 # Function to visualize employee satisfaction levels
 def visualize_employee_satisfaction(schedule_df):
     fig = px.bar(schedule_df, x='employee_name', y='satisfaction', color='satisfaction', title="Employee Satisfaction Levels")
@@ -113,25 +137,17 @@ if st.selectbox("Login as", ["Admin", "Employee"]) == "Admin":
             st.subheader("Employee Satisfaction Levels")
             visualize_employee_satisfaction(schedule_df)
 
-            # Calculate total salary for MIS report
-            total_salary = schedule_df['salary'].sum()
-            predicted_sales = result['predicted_sales']
+            # Generate simplified MIS Report
+            excel_data = convert_df_to_excel(schedule_df)
 
-            # MIS Summary
-            mis_summary = {
-                'Total Employees Scheduled': len(schedule_df),
-                'Total Salaries Spent (₹)': total_salary,
-                'Predicted Sales (₹)': predicted_sales
-            }
-
-            # Download the MIS Report
-            excel_data = convert_df_to_excel(schedule_df, mis_summary)
+            # Add download button for the MIS report
             st.download_button(
-                label="Download MIS Report",
+                label="Download Salary Report",
                 data=excel_data,
-                file_name=f'MIS_Report_{restaurant_id}_{day_of_week}.xlsx',
+                file_name=f'Salary_Report_{restaurant_id}_{day_of_week}.xlsx',
                 mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             )
+
 
 # Employee View: Check individual schedule
 elif st.selectbox("Login as", ["Admin", "Employee"]) == "Employee":
