@@ -1,10 +1,12 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import pandas as pd
 import random
 
 import streamlit as st
 
 app = Flask(__name__)
+CORS(app)
 
 # Load employee data
 employee_data = pd.read_csv('restaurant_staff_schedule.csv')
